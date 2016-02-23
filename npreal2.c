@@ -4737,7 +4737,15 @@ npreal_wait_command_completed(
             if (timeout != MAX_SCHEDULE_TIMEOUT)
                 et = jiffies + timeout;
 #if (LINUX_VERSION_CODE >= VERSION_CODE(2,1,0))
+
+    #if (LINUX_VERSION_CODE >= VERSION_CODE(3,15,0))
+            DEFINE_WAIT(wait);
+            prepare_to_wait(&nd->cmd_rsp_wait, &wait, TASK_INTERRUPTIBLE);
+            timeout = schedule_timeout(timeout);
+            finish_wait(&nd->cmd_rsp_wait, &wait);
+    #else
             interruptible_sleep_on_timeout(&nd->cmd_rsp_wait,timeout);
+    #endif
 #else
             current->timeout = timeout;
             interruptible_sleep_on(&nd->cmd_rsp_wait);
@@ -5160,7 +5168,14 @@ npreal_wait_oqueue(
     while (nd->cmd_ready == 1)
     {
 #if (LINUX_VERSION_CODE >= VERSION_CODE(2,1,0))
-        interruptible_sleep_on_timeout(&nd->cmd_rsp_wait,1);
+    #if (LINUX_VERSION_CODE >= VERSION_CODE(3,15,0))
+            DEFINE_WAIT(wait);
+            prepare_to_wait(&nd->cmd_rsp_wait, &wait, TASK_INTERRUPTIBLE);
+            timeout = schedule_timeout(timeout);
+            finish_wait(&nd->cmd_rsp_wait, &wait);
+    #else
+            interruptible_sleep_on_timeout(&nd->cmd_rsp_wait,1);
+    #endif
 #else
         current->timeout = 1;
         interruptible_sleep_on(&nd->cmd_rsp_wait);
@@ -5181,8 +5196,15 @@ npreal_wait_oqueue(
         if (nd->wait_oqueue_responsed == 0)
         {
 #if (LINUX_VERSION_CODE >= VERSION_CODE(2,1,0))
+    #if (LINUX_VERSION_CODE >= VERSION_CODE(3,15,0))
+            DEFINE_WAIT(wait);
+            prepare_to_wait(&nd->cmd_rsp_wait, &wait, TASK_INTERRUPTIBLE);
+            timeout = schedule_timeout(timeout);
+            finish_wait(&nd->cmd_rsp_wait, &wait);
+    #else
             timeout =
                 interruptible_sleep_on_timeout(&nd->cmd_rsp_wait,timeout);
+    #endif
 #else
             st = jiffies;
             current->timeout = timeout;
