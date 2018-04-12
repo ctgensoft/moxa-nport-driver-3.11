@@ -61,6 +61,7 @@ ifneq ($(KERNELRELEASE),)
 obj-m := npreal2.o
 else
 KDIR	:= /lib/modules/$(shell uname -r)/build
+KDIR	:= /usr/src/linux-obj/$(shell uname -i)/default
 PWD	:= $(shell pwd)
 
 module:
